@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroMarket - Startap MVP Demo</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (Tezkor dizayn uchun) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#10b981', 'primary-dark': '#059669' }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html { scroll-behavior: smooth; }
+        .hero-bg {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        .cart-modal {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .cart-modal.open { transform: translateX(0); }
+        /* Maxsus scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased overflow-x-hidden">
+
+    <!-- ================= NAVIGATSIYA ================= -->
+    <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="#" class="flex items-center gap-2 text-2xl font-extrabold text-gray-900 tracking-tight">
+                    <i class="fa-solid fa-leaf text-primary"></i> AgroMarket
+                </a>
+                
+                <div class="flex items-center gap-4 md:gap-6">
+                    <div class="hidden md:flex gap-6 font-semibold text-gray-600 items-center">
+                        <a href="#home" class="hover:text-primary transition">Bosh sahifa</a>
+                        <a href="#how-it-works" class="hover:text-primary transition">Tizim qanday ishlaydi?</a>
+                        <a href="#products" class="hover:text-primary transition">Bozor</a>
+                        <div class="h-6 w-px bg-gray-300 mx-2"></div>
+                        <a href="#" class="hover:text-primary transition"><i class="fa-regular fa-user"></i> Kirish</a>
+                    </div>
+                    
+                    <!-- Savat Tugmasi -->
+                    <button onclick="toggleCart()" class="relative bg-gray-100 hover:bg-green-50 text-gray-700 hover:text-primary p-3 rounded-full transition duration-300">
+                        <i class="fa-solid fa-cart-shopping text-lg"></i>
+                        <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-[22px] h-[22px] flex items-center justify-center rounded-full shadow-md">0</span>
+                    </button>
+                    
+                    <!-- Fermer Kabineti Tugmasi -->
+                    <button onclick="openDashboard()" class="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-full font-semibold hidden sm:flex items-center gap-2 transition shadow-lg shadow-green-200">
+                        <i class="fa-solid fa-chart-line"></i> Fermer kabineti
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= HERO QISMI ================= -->
+    <section id="home" class="hero-bg h-[85vh] flex items-center justify-center mt-10">
+        <div class="text-center px-4 max-w-4xl mt-10">
+            <span class="bg-primary/20 text-green-300 border border-green-400/50 px-5 py-2 rounded-full text-sm font-bold uppercase tracking-widest mb-6 inline-flex items-center gap-2 backdrop-blur-sm">
+                <i class="fa-solid fa-bolt text-yellow-300"></i> Startap Loyiha MVP
+            </span>
+            <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg">
+                Tabiiy mahsulotlar to'g'ridan-to'g'ri <span class="text-primary">Fermerdan</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-200 mb-10 max-w-2xl mx-auto font-light drop-shadow-md">
+                O'zbekistonning turli hududlarida yetishtirilgan eng sarxil meva va sabzavotlarni dala narxida, vositachilarsiz xarid qiling.
+            </p>
+            <a href="#products" class="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-full text-lg font-bold transition shadow-2xl shadow-green-900/60 inline-flex items-center gap-3 transform hover:-translate-y-1 hover:scale-105">
+                Xaridni boshlash <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- ================= QANDAY ISHLAYDI? ================= -->
+    <section id="how-it-works" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-4">Tizim qanday ishlaydi?</h2>
+            <p class="text-gray-500 mb-16 max-w-2xl mx-auto">AgroMarket an'anaviy bozor zanjirini qisqartirib, fermer va xaridorni to'g'ridan-to'g'ri bog'laydi.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative">
+                <!-- Chiziq (Desktop uchun) -->
+                <div class="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-gray-200 z-0"></div>
+
+                <!-- Qadam 1 -->
+                <div class="relative z-10 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl transition">
+                    <div class="w-24 h-24 mx-auto bg-green-50 rounded-full flex items-center justify-center mb-6 text-primary text-4xl shadow-inner">
+                        <i class="fa-solid fa-tractor"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">1. Fermer hosilni joylaydi</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Dehqon o'z mahsulotini vositachisiz, to'g'ridan-to'g'ri platformaga o'zi belgilagan adolatli narxda kiritadi.</p>
+                </div>
+
+                <!-- Qadam 2 -->
+                <div class="relative z-10 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl transition">
+                    <div class="w-24 h-24 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-6 text-blue-500 text-4xl shadow-inner">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">2. Xaridor buyurtma beradi</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Siz uydan chiqmagan holda, eng toza va arzon mahsulotlarni tanlaysiz va onlayn buyurtma rasmiylashtirasiz.</p>
+                </div>
+
+                <!-- Qadam 3 -->
+                <div class="relative z-10 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl transition">
+                    <div class="w-24 h-24 mx-auto bg-orange-50 rounded-full flex items-center justify-center mb-6 text-orange-500 text-4xl shadow-inner">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">3. Tezkor yetkazib berish</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Maxsus Agro-kuryerlarimiz mahsulotni daladan to'g'ridan-to'g'ri sizning ostonangizgacha yetkazib beradi.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= MAHSULOTLAR (MARKET) ================= -->
+    <section id="products" class="py-20 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-4">Bugungi hosil</h2>
+            <p class="text-gray-500">Dehqonlarimiz tomonidan qo'shilgan so'nggi tabiiy mahsulotlar</p>
+        </div>
+
+        <!-- Qidiruv paneli -->
+        <div class="max-w-2xl mx-auto mb-8 relative group">
+            <input type="text" id="searchInput" oninput="searchProducts()" placeholder="Mahsulot nomini qidiring (masalan: Pomidor, Tarvuz...)" class="w-full pl-14 pr-4 py-4 rounded-full border-2 border-gray-100 focus:outline-none focus:border-primary focus:ring-4 focus:ring-green-50 shadow-sm transition-all text-gray-700 bg-white group-hover:shadow-md font-medium">
+            <i class="fa-solid fa-magnifying-glass absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-primary transition"></i>
+        </div>
+
+        <!-- Toifalar (Filter) -->
+        <div class="flex flex-wrap justify-center gap-3 mb-12" id="categories">
+            <button onclick="filterProducts('all')" class="filter-btn active bg-primary text-white px-6 py-2.5 rounded-full font-medium transition shadow-md">Barchasi</button>
+            <button onclick="filterProducts('sabzavot')" class="filter-btn bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary px-6 py-2.5 rounded-full font-medium transition">Sabzavotlar</button>
+            <button onclick="filterProducts('meva')" class="filter-btn bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary px-6 py-2.5 rounded-full font-medium transition">Mevalar</button>
+            <button onclick="filterProducts('poliz')" class="filter-btn bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary px-6 py-2.5 rounded-full font-medium transition">Poliz</button>
+            <button onclick="filterProducts('chorva')" class="filter-btn bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary px-6 py-2.5 rounded-full font-medium transition">Chorva va Boshqa</button>
+        </div>
+
+        <!-- Mahsulotlar Grid -->
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- JavaScript orqali to'ldiriladi -->
+        </div>
+    </section>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="bg-gray-900 text-gray-400 py-12 text-center mt-10">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-3xl font-extrabold text-white mb-4"><i class="fa-solid fa-leaf text-primary"></i> AgroMarket</div>
+            <p class="mb-6">O'zbekistonning innovatsion qishloq xo'jaligi startapi. MVP bosqichida.</p>
+            <div class="flex justify-center gap-6 text-2xl">
+                <a href="#" class="hover:text-primary transition"><i class="fa-brands fa-telegram"></i></a>
+                <a href="#" class="hover:text-primary transition"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="hover:text-primary transition"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+            <p class="mt-8 text-sm text-gray-600">&copy; 2026 AgroMarket. Barcha huquqlar himoyalangan.</p>
+        </div>
+    </footer>
+
+    <!-- ================= SAVAT MODAL ================= -->
+    <div id="cart-modal" class="cart-modal fixed top-0 right-0 w-full sm:w-[420px] h-full bg-white shadow-2xl z-[1000] flex flex-col">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm">
+            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-basket-shopping text-primary mr-2"></i> Sizning savatchangiz</h2>
+            <button onclick="toggleCart()" class="text-gray-400 hover:text-red-500 bg-white p-2 rounded-full shadow-sm text-xl transition"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 bg-gray-50/30">
+            <div class="text-center text-gray-400 mt-20">
+                <i class="fa-solid fa-cart-arrow-down text-5xl mb-4 text-gray-200"></i>
+                <p>Savat hozircha bo'sh...</p>
+            </div>
+        </div>
+        
+        <div class="p-6 border-t border-gray-100 bg-white">
+            <div class="flex justify-between items-center mb-6">
+                <span class="font-bold text-gray-500 uppercase tracking-wide text-sm">Jami summa:</span>
+                <span id="cart-total" class="font-extrabold text-2xl text-gray-900">0 so'm</span>
+            </div>
+            <button onclick="checkout()" class="w-full bg-primary hover:bg-primary-dark text-white py-4 rounded-2xl font-bold text-lg transition shadow-lg shadow-green-200 flex justify-center items-center gap-3">
+                Buyurtmani rasmiylashtirish <i class="fa-solid fa-arrow-right-long"></i>
+            </button>
+        </div>
+    </div>
+    <!-- Modal Orqa Foni -->
+    <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-gray-900/60 z-[999] hidden opacity-0 transition-opacity duration-300 backdrop-blur-sm"></div>
+
+
+    <!-- ================= BATAFSIL OYNA (QUICK VIEW MODAL) ================= -->
+    <div id="quickview-modal" class="fixed inset-0 bg-gray-900/70 z-[1020] hidden flex items-center justify-center backdrop-blur-md transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col md:flex-row relative" id="quickview-content">
+            
+            <button onclick="closeQuickView()" class="absolute top-4 right-4 bg-white/80 hover:bg-gray-100 text-gray-600 w-10 h-10 rounded-full flex items-center justify-center z-10 transition backdrop-blur-sm shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+            
+            <!-- Rasm qismi -->
+            <div class="w-full md:w-1/2 h-64 md:h-auto relative bg-gray-100">
+                <img id="qv-img" src="" alt="Mahsulot" class="w-full h-full object-cover">
+                <span id="qv-category" class="absolute top-4 left-4 bg-white/90 text-gray-800 font-bold px-4 py-1.5 rounded-full shadow-sm text-sm capitalize backdrop-blur-sm">Toifa</span>
+            </div>
+            
+            <!-- Ma'lumot qismi -->
+            <div class="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-center bg-white">
+                <div class="flex items-center gap-2 text-sm text-yellow-500 mb-2 font-bold" id="qv-rating">
+                    <!-- Rating kiritiladi -->
+                </div>
+                <h2 id="qv-name" class="text-3xl font-extrabold text-gray-900 mb-2">Mahsulot nomi</h2>
+                <p id="qv-price" class="text-2xl font-bold text-primary mb-6">0 so'm</p>
+                
+                <p id="qv-desc" class="text-gray-600 leading-relaxed mb-8 text-sm">
+                    Bu yerda mahsulot haqida batafsil ekologik ma'lumotlar chiqadi.
+                </p>
+                
+                <div class="bg-green-50/50 p-4 rounded-2xl border border-green-100 mb-8 flex items-center gap-4">
+                    <img id="qv-farmer-img" src="" alt="Fermer" class="w-14 h-14 rounded-full border-2 border-white shadow-sm">
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase">Sotuvchi (Fermer)</p>
+                        <p id="qv-farmer-name" class="text-lg font-bold text-gray-800">Ism Familiya</p>
+                    </div>
+                </div>
+                
+                <button id="qv-add-btn" class="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-bold text-lg transition flex items-center justify-center gap-3 shadow-xl shadow-gray-900/20 mt-auto">
+                    <i class="fa-solid fa-cart-plus"></i> Savatga qo'shish
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= FERMER DASHBOARD (ADMIN KABINET) MODAL ================= -->
+    <div id="dashboard-modal" class="fixed inset-0 bg-gray-900/80 z-[1030] hidden flex items-center justify-center backdrop-blur-md">
+        <div class="bg-gray-50 rounded-3xl w-full max-w-5xl h-[85vh] overflow-hidden m-4 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col" id="dashboard-content">
+            
+            <!-- Dashboard Header -->
+            <div class="bg-white px-8 py-5 border-b border-gray-200 flex justify-between items-center shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-tractor"></i></div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">Fermer Kabineti</h2>
+                        <p class="text-xs text-gray-500">Murodjon (Sirdaryo viloyati)</p>
+                    </div>
+                </div>
+                <button onclick="closeDashboard()" class="text-gray-400 hover:text-red-500 bg-gray-100 hover:bg-gray-200 w-10 h-10 rounded-full transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <!-- Dashboard Content -->
+            <div class="flex-1 overflow-y-auto p-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Stat Card 1 -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div class="w-14 h-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-wallet"></i></div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold mb-1">Bugungi Savdo</p>
+                            <p class="text-2xl font-extrabold text-gray-900">1,240,000 <span class="text-sm font-normal text-gray-400">so'm</span></p>
+                        </div>
+                    </div>
+                    <!-- Stat Card 2 -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-box-open"></i></div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold mb-1">Faol Buyurtmalar</p>
+                            <p class="text-2xl font-extrabold text-gray-900">8 <span class="text-sm font-normal text-gray-400">ta</span></p>
+                        </div>
+                    </div>
+                    <!-- Stat Card 3 -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div class="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-leaf"></i></div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold mb-1">Mening Mahsulotlarim</p>
+                            <p class="text-2xl font-extrabold text-gray-900">12 <span class="text-sm font-normal text-gray-400">xil</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">So'nggi Buyurtmalar</h3>
+                        <button class="bg-primary text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-primary-dark transition"><i class="fa-solid fa-plus mr-1"></i> Yangi mahsulot qo'shish</button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-gray-400 text-sm border-b border-gray-100">
+                                    <th class="pb-3 font-medium">ID raqami</th>
+                                    <th class="pb-3 font-medium">Xaridor</th>
+                                    <th class="pb-3 font-medium">Mahsulot</th>
+                                    <th class="pb-3 font-medium">Summa</th>
+                                    <th class="pb-3 font-medium">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="border-b border-gray-50 hover:bg-gray-50">
+                                    <td class="py-4 font-semibold text-gray-900">#45892</td>
+                                    <td class="py-4 text-gray-600">Alisher U.</td>
+                                    <td class="py-4 text-gray-600">Sirdaryo Qovuni (2 dona)</td>
+                                    <td class="py-4 font-bold text-gray-800">44,000 so'm</td>
+                                    <td class="py-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">Kutilmoqda</span></td>
+                                </tr>
+                                <tr class="border-b border-gray-50 hover:bg-gray-50">
+                                    <td class="py-4 font-semibold text-gray-900">#45891</td>
+                                    <td class="py-4 text-gray-600">Zilola T.</td>
+                                    <td class="py-4 text-gray-600">Sirdaryo Qovuni (5 dona)</td>
+                                    <td class="py-4 font-bold text-gray-800">110,000 so'm</td>
+                                    <td class="py-4"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Yo'lda</span></td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-4 font-semibold text-gray-900">#45889</td>
+                                    <td class="py-4 text-gray-600">Botir R.</td>
+                                    <td class="py-4 text-gray-600">Sirdaryo Qovuni (1 dona)</td>
+                                    <td class="py-4 font-bold text-gray-800">22,000 so'm</td>
+                                    <td class="py-4"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Yetkazildi</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= YETKAZIB BERISH (TRACKING) MODAL ================= -->
+    <div id="tracking-modal" class="fixed inset-0 bg-gray-900/80 z-[1040] hidden flex items-center justify-center backdrop-blur-md">
+        <div class="bg-white rounded-3xl w-full max-w-md p-8 m-4 shadow-2xl transform transition-all scale-95 opacity-0" id="tracking-content">
+            
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-extrabold text-gray-800">Buyurtma holati</h2>
+                <button onclick="closeTracking()" class="text-gray-400 hover:text-red-500 bg-gray-100 w-8 h-8 rounded-full flex justify-center items-center transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-5 mb-8 border border-green-100 flex justify-between items-center shadow-inner">
+                <div>
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Buyurtma raqami</p>
+                    <p class="text-xl font-black text-gray-900" id="track-id">#00000</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Yetkazib berish</p>
+                    <p class="text-xl font-black text-primary" id="track-time">-- daqiqa</p>
+                </div>
+            </div>
+
+            <!-- Interfaol jarayon yo'lagi (Timeline) -->
+            <div class="relative border-l-2 border-gray-200 ml-4 space-y-8 mt-4">
+                
+                <div class="relative pl-8 step-item" id="step-1">
+                    <div class="absolute -left-[19px] bg-primary text-white w-9 h-9 rounded-full flex items-center justify-center border-4 border-white shadow-md transition-all duration-500">
+                        <i class="fa-solid fa-check text-sm"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-lg">Qabul qilindi</h3>
+                    <p class="text-sm text-gray-500 mt-1">Fermerga xabar yuborildi</p>
+                </div>
+                
+                <div class="relative pl-8 step-item opacity-40 transition-opacity duration-500" id="step-2">
+                    <div class="absolute -left-[19px] bg-gray-200 text-gray-400 w-9 h-9 rounded-full flex items-center justify-center border-4 border-white shadow-md transition-all duration-500" id="icon-2">
+                        <i class="fa-solid fa-box-open text-sm"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-lg">Tayyorlanmoqda</h3>
+                    <p class="text-sm text-gray-500 mt-1">Fermer mahsulotni ajratib qadoqlamoqda</p>
+                </div>
+
+                <div class="relative pl-8 step-item opacity-40 transition-opacity duration-500" id="step-3">
+                    <div class="absolute -left-[19px] bg-gray-200 text-gray-400 w-9 h-9 rounded-full flex items-center justify-center border-4 border-white shadow-md transition-all duration-500" id="icon-3">
+                        <i class="fa-solid fa-truck-fast text-sm"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-lg">Yo'lda</h3>
+                    <p class="text-sm text-gray-500 mt-1">Kuryer mahsulotni manzilingizga keltirmoqda</p>
+                </div>
+            </div>
+            
+            <button onclick="closeTracking()" class="mt-10 w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-2xl transition shadow-xl">Yopish</button>
+        </div>
+    </div>
+
+
+    <!-- ================= JAVASCRIPT MANTIQ QISMI ================= -->
+    <script>
+        // Mahsulotlar bazasi (Reyting va sotuv soni qo'shildi)
+        const products = [
+            { id: 1, name: "Yangi Qizil Pomidor", price: 8000, unit: "kg", category: "sabzavot", rating: 4.8, reviews: 124, sold: 450, img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=500&q=80", farmer: "Rustam aka", avatar: "https://i.pravatar.cc/150?img=11" },
+            { id: 2, name: "Sirdaryo Qovuni", price: 22000, unit: "dona", category: "poliz", rating: 5.0, reviews: 89, sold: 210, img: "https://images.unsplash.com/photo-1571575173700-afb9492e6a50?auto=format&fit=crop&w=500&q=80", farmer: "Murodjon", avatar: "https://i.pravatar.cc/150?img=12" },
+            { id: 3, name: "Namangan Olmasi", price: 12000, unit: "kg", category: "meva", rating: 4.9, reviews: 201, sold: 890, img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=500&q=80", farmer: "Xalim bobo", avatar: "https://i.pravatar.cc/150?img=13" },
+            { id: 4, name: "Toza Tabiiy Asal", price: 65000, unit: "kg", category: "chorva", rating: 4.9, reviews: 342, sold: 1200, img: "https://images.unsplash.com/photo-1471943311424-646960669fbc?auto=format&fit=crop&w=500&q=80", farmer: "Anvar asalarichi", avatar: "https://i.pravatar.cc/150?img=14" },
+            { id: 5, name: "Qarsildoq Bodring", price: 6000, unit: "kg", category: "sabzavot", rating: 4.7, reviews: 95, sold: 320, img: "https://images.unsplash.com/photo-1604977042946-1eecc30f269e?auto=format&fit=crop&w=500&q=80", farmer: "Dilshod", avatar: "https://i.pravatar.cc/150?img=15" },
+            { id: 6, name: "Xorazm Tarvuzi", price: 18000, unit: "dona", category: "poliz", rating: 4.8, reviews: 156, sold: 540, img: "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?auto=format&fit=crop&w=500&q=80", farmer: "Dilafro'z opa", avatar: "https://i.pravatar.cc/150?img=16" },
+            { id: 7, name: "Qora Shahzoda Uzumi", price: 15000, unit: "kg", category: "meva", rating: 5.0, reviews: 210, sold: 760, img: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=500&q=80", farmer: "Akmal aka", avatar: "https://i.pravatar.cc/150?img=17" },
+            { id: 8, name: "Tog' Qulupnayi", price: 25000, unit: "kg", category: "meva", rating: 4.9, reviews: 412, sold: 1500, img: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=500&q=80", farmer: "Gulzoda opa", avatar: "https://i.pravatar.cc/150?img=5" },
+            { id: 9, name: "Farg'ona Shaftolisi", price: 16000, unit: "kg", category: "meva", rating: 4.7, reviews: 88, sold: 290, img: "https://images.unsplash.com/photo-1629828874514-c1e5103f2150?auto=format&fit=crop&w=500&q=80", farmer: "Nosirjon", avatar: "https://i.pravatar.cc/150?img=33" },
+            { id: 10, name: "Samarqand Kartoshkasi", price: 5000, unit: "kg", category: "sabzavot", rating: 4.6, reviews: 54, sold: 900, img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=500&q=80", farmer: "Tohir aka", avatar: "https://i.pravatar.cc/150?img=51" },
+            { id: 11, name: "Qizil Sabzi", price: 4500, unit: "kg", category: "sabzavot", rating: 4.5, reviews: 32, sold: 420, img: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&w=500&q=80", farmer: "Sherali", avatar: "https://i.pravatar.cc/150?img=52" },
+            { id: 12, name: "Oq Piyoz", price: 4000, unit: "kg", category: "sabzavot", rating: 4.7, reviews: 76, sold: 650, img: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=500&q=80", farmer: "Rahmatilla", avatar: "https://i.pravatar.cc/150?img=53" },
+            { id: 13, name: "Yirik Gilos", price: 28000, unit: "kg", category: "meva", rating: 4.9, reviews: 180, sold: 550, img: "https://images.unsplash.com/photo-1528820600606-0ef5600cbfee?auto=format&fit=crop&w=500&q=80", farmer: "Zokir aka", avatar: "https://i.pravatar.cc/150?img=54" },
+            { id: 14, name: "Tabiiy Sigir Suti", price: 10000, unit: "litr", category: "chorva", rating: 5.0, reviews: 520, sold: 2100, img: "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=500&q=80", farmer: "Ziyoda opa", avatar: "https://i.pravatar.cc/150?img=43" },
+            { id: 15, name: "Qishloq Tuxumi", price: 1500, unit: "dona", category: "chorva", rating: 4.8, reviews: 310, sold: 3400, img: "https://images.unsplash.com/photo-1587486913049-53fc88980cfc?auto=format&fit=crop&w=500&q=80", farmer: "Oydin xola", avatar: "https://i.pravatar.cc/150?img=44" },
+            { id: 16, name: "Lahm Mol Go'shti", price: 85000, unit: "kg", category: "chorva", rating: 4.9, reviews: 145, sold: 480, img: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=500&q=80", farmer: "Botir qassob", avatar: "https://i.pravatar.cc/150?img=60" }
+        ];
+
+        let cart = [];
+        let currentCategory = 'all';
+
+        // Ekranga mahsulotlarni chiqarish
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = ''; 
+            
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filteredProducts = products.filter(p => {
+                const matchCategory = currentCategory === 'all' || p.category === currentCategory;
+                const matchSearch = p.name.toLowerCase().includes(searchQuery);
+                return matchCategory && matchSearch;
+            });
+            
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10 font-semibold text-lg"><i class="fa-solid fa-box-open text-4xl mb-3 text-gray-300 block"></i>Kechirasiz, bunday mahsulot topilmadi.</div>`;
+                return;
+            }
+
+            filteredProducts.forEach(product => {
+                // Yulduzchalar mantig'i
+                let starsHTML = '';
+                for(let i=0; i<Math.floor(product.rating); i++) starsHTML += '<i class="fa-solid fa-star"></i>';
+                if(product.rating % 1 !== 0) starsHTML += '<i class="fa-solid fa-star-half-stroke"></i>';
+
+                const card = `
+                    <div class="bg-white rounded-3xl shadow-sm hover:shadow-2xl border border-gray-100 transition-all duration-300 overflow-hidden group flex flex-col h-full relative">
+                        <div class="h-60 overflow-hidden relative cursor-pointer" onclick="openQuickView(${product.id})">
+                            <img src="${product.img}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700 ease-in-out">
+                            <span class="absolute top-4 left-4 bg-white/95 text-gray-800 font-bold px-3 py-1 rounded-full shadow-sm text-xs capitalize backdrop-blur-md">${product.category}</span>
+                            
+                            <!-- Ijtimoiy Isbot (Hover da chiqadigan 'Ko'rish' tugmasi) -->
+                            <div class="absolute inset-0 bg-black/20 hidden group-hover:flex items-center justify-center transition-all duration-300">
+                                <span class="bg-white/90 text-gray-900 font-bold px-6 py-2 rounded-full shadow-lg backdrop-blur-sm transform translate-y-4 group-hover:translate-y-0 transition-transform">Batafsil ko'rish</span>
+                            </div>
+                        </div>
+                        <div class="p-6 flex flex-col flex-1">
+                            <div class="flex items-center justify-between mb-3 text-xs text-gray-500">
+                                <div class="flex items-center gap-1 text-yellow-400 text-sm">
+                                    ${starsHTML} <span class="text-gray-500 font-semibold ml-1">${product.rating}</span>
+                                </div>
+                                <span>${product.sold} ta sotilgan</span>
+                            </div>
+                            
+                            <h3 class="text-xl font-extrabold text-gray-900 mb-1 leading-tight hover:text-primary cursor-pointer transition" onclick="openQuickView(${product.id})">${product.name}</h3>
+                            <div class="flex items-center gap-2 mb-5">
+                                <img src="${product.avatar}" class="w-6 h-6 rounded-full">
+                                <p class="text-sm font-medium text-gray-600">${product.farmer}</p>
+                            </div>
+                            
+                            <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                                <p class="text-primary font-black text-xl">${product.price.toLocaleString()} <span class="text-xs text-gray-400 font-normal">so'm/${product.unit}</span></p>
+                                <button onclick="addToCart(${product.id})" class="bg-gray-100 hover:bg-primary text-gray-700 hover:text-white w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-green-300/50">
+                                    <i class="fa-solid fa-cart-plus text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        // ================= QUICK VIEW (BATAFSIL OYNA) =================
+        function openQuickView(id) {
+            const p = products.find(x => x.id === id);
+            
+            document.getElementById('qv-img').src = p.img;
+            document.getElementById('qv-category').innerText = p.category;
+            document.getElementById('qv-name').innerText = p.name;
+            document.getElementById('qv-price').innerHTML = `${p.price.toLocaleString()} <span class="text-sm text-gray-400 font-normal">so'm / ${p.unit}</span>`;
+            document.getElementById('qv-farmer-name').innerText = p.farmer;
+            document.getElementById('qv-farmer-img').src = p.avatar;
+            
+            // Generate Stars
+            let starsHTML = '';
+            for(let i=0; i<Math.floor(p.rating); i++) starsHTML += '<i class="fa-solid fa-star"></i>';
+            if(p.rating % 1 !== 0) starsHTML += '<i class="fa-solid fa-star-half-stroke"></i>';
+            document.getElementById('qv-rating').innerHTML = `${starsHTML} <span class="text-gray-700 ml-1">${p.rating} (${p.reviews} baho) • ${p.sold} marta sotilgan</span>`;
+            
+            // Dinamik ta'rif
+            document.getElementById('qv-desc').innerHTML = `<strong>${p.name}</strong> — bu vositachilarsiz, to'g'ridan-to'g'ri <strong>${p.farmer}</strong>ning dalasidan keltiriladigan 100% tabiiy mahsulot. Kimyoviy o'g'itlardan holi, ekologik toza muhitda yetishtirilgan. O'zingiz va oilangiz salomatligi uchun eng yaxshi tanlov!`;
+            
+            // Tugma vazifasi
+            document.getElementById('qv-add-btn').setAttribute('onclick', `addToCart(${p.id}); closeQuickView();`);
+            
+            // Animatsiya bilan ochish
+            const modal = document.getElementById('quickview-modal');
+            const content = document.getElementById('quickview-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeQuickView() {
+            const modal = document.getElementById('quickview-modal');
+            const content = document.getElementById('quickview-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // ================= DASHBOARD (FERMER KABINETI) =================
+        function openDashboard() {
+            const modal = document.getElementById('dashboard-modal');
+            const content = document.getElementById('dashboard-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeDashboard() {
+            const modal = document.getElementById('dashboard-modal');
+            const content = document.getElementById('dashboard-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // ================= FILTR VA SAVAT MANTIG'I =================
+        function searchProducts() { renderProducts(); }
+
+        function filterProducts(category) {
+            currentCategory = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = "filter-btn bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary px-6 py-2.5 rounded-full font-medium transition";
+            });
+            event.target.className = "filter-btn active bg-primary text-white px-6 py-2.5 rounded-full font-medium transition shadow-md";
+            renderProducts();
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            const overlay = document.getElementById('cart-overlay');
+            
+            modal.classList.toggle('open');
+            if(modal.classList.contains('open')) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const existingItem = cart.find(item => item.id === id);
+            
+            if (existingItem) { existingItem.quantity += 1; } 
+            else { cart.push({ ...product, quantity: 1 }); }
+            
+            updateCartUI();
+            
+            // Kichik pulslanish effekti
+            const countBadge = document.getElementById('cart-count');
+            countBadge.classList.add('scale-150', 'bg-yellow-400');
+            setTimeout(() => countBadge.classList.remove('scale-150', 'bg-yellow-400'), 300);
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            const cartCount = document.getElementById('cart-count');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.innerText = totalItems;
+            cartItems.innerHTML = '';
+            
+            if(cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="text-center text-gray-400 mt-20">
+                        <i class="fa-solid fa-cart-arrow-down text-6xl mb-4 text-gray-200 block"></i>
+                        <p class="font-medium">Savat hozircha bo'sh...</p>
+                    </div>`;
+                cartTotal.innerText = "0 so'm";
+                return;
+            }
+
+            let totalSum = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                totalSum += itemTotal;
+                
+                cartItems.innerHTML += `
+                    <div class="flex items-center gap-4 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm relative group">
+                        <img src="${item.img}" alt="${item.name}" class="w-16 h-16 object-cover rounded-xl">
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-gray-800 leading-tight mb-1">${item.name}</h4>
+                            <p class="text-xs text-gray-500 mb-1">${item.quantity} ${item.unit} x ${item.price.toLocaleString()} so'm</p>
+                            <p class="text-primary font-black text-sm">${itemTotal.toLocaleString()} so'm</p>
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-200 hover:text-red-500 p-2 transition opacity-0 group-hover:opacity-100">
+                            <i class="fa-solid fa-trash-can text-lg"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            cartTotal.innerText = totalSum.toLocaleString() + " so'm";
+        }
+
+        // ================= BUYURTMA STATUSI (TRACKING) =================
+        function checkout() {
+            if(cart.length === 0) {
+                alert("Savatingiz bo'sh. Iltimos, xaridni davom ettiring.");
+                return;
+            }
+            
+            toggleCart(); 
+            showTrackingModal(); 
+            
+            cart = []; 
+            updateCartUI();
+        }
+
+        function showTrackingModal() {
+            const modal = document.getElementById('tracking-modal');
+            const content = document.getElementById('tracking-content');
+            
+            document.getElementById('track-id').innerText = '#' + (Math.floor(Math.random() * 90000) + 10000);
+            document.getElementById('track-time').innerText = (Math.floor(Math.random() * 20) + 25) + ' daqiqa';
+            
+            resetStep(2);
+            resetStep(3);
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            setTimeout(() => activateStep(2), 3000); 
+            setTimeout(() => activateStep(3), 7000); 
+        }
+
+        function activateStep(stepNum) {
+            const step = document.getElementById('step-' + stepNum);
+            const icon = document.getElementById('icon-' + stepNum);
+            if(step && icon) {
+                step.classList.remove('opacity-40');
+                icon.className = "absolute -left-[19px] bg-primary text-white w-9 h-9 rounded-full flex items-center justify-center border-4 border-white shadow-md transition-all duration-500 scale-110";
+                setTimeout(() => icon.classList.remove('scale-110'), 300);
+            }
+        }
+
+        function resetStep(stepNum) {
+            const step = document.getElementById('step-' + stepNum);
+            const icon = document.getElementById('icon-' + stepNum);
+            if(step && icon) {
+                step.classList.add('opacity-40');
+                const baseIcon = stepNum === 2 ? 'fa-box-open' : 'fa-truck-fast';
+                icon.className = `absolute -left-[19px] bg-gray-200 text-gray-400 w-9 h-9 rounded-full flex items-center justify-center border-4 border-white shadow-md transition-all duration-500`;
+                icon.innerHTML = `<i class="fa-solid ${baseIcon} text-sm"></i>`;
+            }
+        }
+
+        function closeTracking() {
+            const modal = document.getElementById('tracking-modal');
+            const content = document.getElementById('tracking-content');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // Boshlang'ich yuklanish
+        window.onload = () => { renderProducts(); };
+    </script>
+</body>
+</html>
